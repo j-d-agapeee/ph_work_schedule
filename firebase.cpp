@@ -1,10 +1,10 @@
 #include "firebase.h"
 
 firebase::firebase() {
+    yyyyMM = QDate::currentDate();
     refresh_refToken();
     connect(this, &firebase::signIn_succeeded, this, &firebase::refresh_refToken);
     connect(this, &firebase::refToken_refreshed, this, [=]{ identityToolkit("lookup"); });
-
     connect(this, &firebase::get_userInfo_finished, this, [=]{
         QNetworkReply *reply = get("user", "permission");
         connect(reply, &QNetworkReply::finished, this, [this, reply]{
@@ -12,13 +12,16 @@ firebase::firebase() {
             for(const auto &value : array){
                 QString str = value.toObject()["stringValue"].toString();
                 if(str == email){
+                    admin = true;
                     emit is_admin(true);
                     return;
                 }
             }
+            admin = false;
             emit is_admin(false);
         });
     });
+    connect(this, &firebase::is_admin, this, &firebase::get_shift);
 }
 
 QString firebase::get_localStorage(QString key){
@@ -149,4 +152,35 @@ QNetworkReply *firebase::patch(QString collectionId, QString documentId, QString
     value["fields"] = fields;
 
     return send_request(url, headers, "PATCH", QJsonDocument(value).toJson());
+}
+
+void firebase::get_shift(bool admin){
+    QNetworkReply *reply;
+    if(admin) reply = get("shift", "");
+    else      reply = get("shift", username);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply, admin]{
+        QJsonObject jobj = QJsonDocument::fromJson(reply->readAll()).object();
+        QJsonArray array;
+        if(admin){
+            array = jobj["documents"].toArray();
+            // if(type == "requested"){
+            // }
+        }
+        else{
+            array << jobj;
+        }
+        QStringList out;
+        for (const auto &value : array) {
+            QJsonObject fields = value.toObject()["fields"].toObject();
+            QString str;
+            for (const auto &key : fields.keys()) {
+                QDate keyDate = QDate::fromString(key, "yyyyMMdd");
+                if(keyDate.year() == yyyyMM.year() && keyDate.month() == yyyyMM.month()){
+                    str.append()
+                }
+            }
+        }
+    });
+
 }

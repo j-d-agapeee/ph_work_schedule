@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("firebase", &fb);
+    engine.rootContext()->setContextProperty("shift", &fb.shift);
 
     QObject::connect(
         &engine,

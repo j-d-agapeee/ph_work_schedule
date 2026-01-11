@@ -21,7 +21,13 @@ public:
     //user info
     QString email, username;
     bool    is_email_verified;
-    // bool    admin = false;
+    bool    admin = false;
+
+    //date info
+    QDate yyyyMM;
+
+    //QML
+    QStringListModel shift;
 
     //function
     QString get_localStorage(QString key);
@@ -43,6 +49,7 @@ public slots:
     void signUp_signIn(QString endpoint, QString id, QString pass, QString displayName);
     QNetworkReply *get(QString collectionId, QString documentId);
     QNetworkReply *patch(QString collectionId, QString documentId, QString key, QJsonObject fields);
+    void get_shift(bool admin);
 };
 
 #endif // FIREBASE_H

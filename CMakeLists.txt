@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Quick Network)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 
+file(GLOB QML_ICONS
+        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+        "icons/*.png"
+)
+
 qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appph_work_schedule
@@ -19,6 +24,8 @@ qt_add_qml_module(appph_work_schedule
         Main.qml
         QML_FILES OverLay.qml
         SOURCES firebase.h firebase.cpp
+        RESOURCES
+            ${QML_ICONS}
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
