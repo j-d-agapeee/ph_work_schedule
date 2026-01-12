@@ -10,6 +10,9 @@ ApplicationWindow {
 
     Material.theme: Material.Dark
 
+    property string split_l: firebase.set_split("large")
+    property string split_s: firebase.set_split("small")
+
     FontLoader{
         id: jpFont
         source: "https://j-d-agapeee.github.io/ph_work_schedule/HiraMaruProN-W4-AlphaNum-01.otf"
@@ -38,15 +41,36 @@ ApplicationWindow {
 
         ColumnLayout{
             width: parent.width
-            TabBar{
+            height: parent.height - menubar.height
+            ListView{
+                id: outLV
                 Layout.fillWidth: true
-                TabButton{
-                    text: "にほんご"
-
+                Layout.fillHeight: true
+                model: shift
+                clip: true
+                delegate: ScrollView{
+                    width: ListView.view.width
+                    height: 50
+                    ScrollBar.horizontal.position: scroll.position
+                    ScrollBar.horizontal.policy:   "AlwaysOff"
+                    ListView{
+                        anchors.fill: parent
+                        orientation: ListView.Horizontal
+                        model: display.split(split_l)
+                        delegate: Button{
+                            width: index === 0 ? 300 : 100
+                            text: modelData.split(split_s)[1]
+                            visible: text !== ""
+                        }
+                    }
                 }
-                TabButton{
-                    text: "漢字"
-                }
+            }
+            ScrollBar{
+                id: scroll
+                Layout.fillWidth: true
+                height: 50
+                orientation: "Horizontal"
+                policy: "AlwaysOn"
             }
         }
     }

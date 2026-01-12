@@ -1,7 +1,7 @@
 #include "firebase.h"
 
 firebase::firebase() {
-    yyyyMM = QDate::currentDate();
+    yyyyMM = QDate(QDate::currentDate().year(), QDate::currentDate().month(), 1);
     refresh_refToken();
     connect(this, &firebase::signIn_succeeded, this, &firebase::refresh_refToken);
     connect(this, &firebase::refToken_refreshed, this, [=]{ identityToolkit("lookup"); });
@@ -174,13 +174,28 @@ void firebase::get_shift(bool admin){
         for (const auto &value : array) {
             QJsonObject fields = value.toObject()["fields"].toObject();
             QString str;
-            for (const auto &key : fields.keys()) {
+            str.append(value.toObject()["name"].toString().replace("projects/phdatabase-b0ee2/databases/(default)/documents/shift/", "") + split_l);
+            int next = 0;
+            for(int day = 0; day < yyyyMM.daysInMonth(); day++){
+                QString key = fields.keys().at(next);
+                QDate added = yyyyMM.addDays(day);
                 QDate keyDate = QDate::fromString(key, "yyyyMMdd");
-                if(keyDate.year() == yyyyMM.year() && keyDate.month() == yyyyMM.month()){
-                    str.append()
+                if(added == keyDate){
+                    str.append(keyDate.toString("MM/dd") + split_s + fields[key].toObject()["stringValue"].toString() + split_s + key + split_l);
+                    next++;
                 }
+                else
+                    str.append("" + split_s + "" + split_s + key + split_l);
+
             }
+            // for (const auto &key : fields.keys()) {
+            //     QDate keyDate = QDate::fromString(key, "yyyyMMdd");
+            //     if(keyDate.year() == yyyyMM.year() && keyDate.month() == yyyyMM.month())
+            //         str.append(keyDate.toString("MM/dd") + split_s + fields[key].toObject()["stringValue"].toString() + split_s + key + split_l);
+            // }
+            out.append(str.mid(0, str.size()-split_l.size()-1));
         }
+        shift.setStringList(out);
     });
 
 }

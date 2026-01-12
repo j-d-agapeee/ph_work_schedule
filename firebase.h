@@ -15,7 +15,9 @@ public:
     //variable
     QNetworkAccessManager *manager = new QNetworkAccessManager;
     QString API_key = "AIzaSyAhav7lsi8p2QNmhIfAO1MoLy5vcOZ1SM0"; //leak ok
-    QString prefix = "phws_";
+    QString prefix  = "phws_";
+    QString split_l = "({[";
+    QString split_s = ")}]";
     QString idToken, refToken;
 
     //user info
@@ -46,6 +48,7 @@ signals:
     void is_admin(bool admin);
 
 public slots:
+    QString set_split(QString ls){ return ls == "large" ? split_l : split_s; }
     void signUp_signIn(QString endpoint, QString id, QString pass, QString displayName);
     QNetworkReply *get(QString collectionId, QString documentId);
     QNetworkReply *patch(QString collectionId, QString documentId, QString key, QJsonObject fields);
