@@ -26,7 +26,7 @@ public:
     bool    admin = false;
 
     //date info
-    QDate yyyyMM;
+    QDate yyyyMM = QDate(QDate::currentDate().year(), QDate::currentDate().month(), 1);
 
     //QML
     QStringListModel shift;
@@ -46,13 +46,17 @@ signals:
     void send_verified_mail_succeeded();
     void get_userInfo_finished();
     void is_admin(bool admin);
+    void regist_clicked(QString name, int day, QString requested, QString confirmed);
+    void jump_yyyyMM(QString yM);
 
 public slots:
     QString set_split(QString ls){ return ls == "large" ? split_l : split_s; }
+    QString set_yyyyMM(){ return yyyyMM.toString("yyyy/MM"); }
     void signUp_signIn(QString endpoint, QString id, QString pass, QString displayName);
     QNetworkReply *get(QString collectionId, QString documentId);
     QNetworkReply *patch(QString collectionId, QString documentId, QString key, QJsonObject fields);
-    void get_shift(bool admin);
+    void get_shift();
+    void add_yyyyMM(int addY, int addM);
 };
 
 #endif // FIREBASE_H

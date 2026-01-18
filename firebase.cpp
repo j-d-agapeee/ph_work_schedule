@@ -1,7 +1,6 @@
 #include "firebase.h"
 
 firebase::firebase() {
-    yyyyMM = QDate(QDate::currentDate().year(), QDate::currentDate().month(), 1);
     refresh_refToken();
     connect(this, &firebase::signIn_succeeded, this, &firebase::refresh_refToken);
     connect(this, &firebase::refToken_refreshed, this, [=]{ identityToolkit("lookup"); });
@@ -154,22 +153,23 @@ QNetworkReply *firebase::patch(QString collectionId, QString documentId, QString
     return send_request(url, headers, "PATCH", QJsonDocument(value).toJson());
 }
 
-void firebase::get_shift(bool admin){
+void firebase::get_shift(){
     QNetworkReply *reply;
     if(admin) reply = get("shift", "");
     else      reply = get("shift", username);
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply, admin]{
+    connect(reply, &QNetworkReply::finished, this, [this, reply]{
         QJsonObject jobj = QJsonDocument::fromJson(reply->readAll()).object();
         QJsonArray array;
-        if(admin){
-            array = jobj["documents"].toArray();
-            // if(type == "requested"){
-            // }
-        }
-        else{
-            array << jobj;
-        }
+        if(admin) array = jobj["documents"].toArray();
+        else      array << jobj;
+
+        QJsonObject voidObj, voidFields;
+        voidFields["0"]  = "";
+        voidObj["name"]  = "なまえ";
+        voidObj["fields"]= voidFields;
+        array.insert(0, voidObj); // void value
+
         QStringList out;
         for (const auto &value : array) {
             QJsonObject fields = value.toObject()["fields"].toObject();
@@ -180,22 +180,23 @@ void firebase::get_shift(bool admin){
                 QString key = fields.keys().at(next);
                 QDate added = yyyyMM.addDays(day);
                 QDate keyDate = QDate::fromString(key, "yyyyMMdd");
+                qDebug() << added << keyDate;
                 if(added == keyDate){
-                    str.append(keyDate.toString("MM/dd") + split_s + fields[key].toObject()["stringValue"].toString() + split_s + key + split_l);
+                    str.append(keyDate.toString("d") + split_s + fields[key].toObject()["stringValue"].toString() + split_s + key + split_l);
                     next++;
                 }
-                else
-                    str.append("" + split_s + "" + split_s + key + split_l);
-
+                else{
+                    QStringList dow = {"","月","火","水","木","金","土","日"};
+                    str.append(added.toString("d(" + dow.at(added.dayOfWeek())) + ")" + split_s + split_s + split_s + added.toString("yyyyMMdd") + split_l);
+                }
             }
-            // for (const auto &key : fields.keys()) {
-            //     QDate keyDate = QDate::fromString(key, "yyyyMMdd");
-            //     if(keyDate.year() == yyyyMM.year() && keyDate.month() == yyyyMM.month())
-            //         str.append(keyDate.toString("MM/dd") + split_s + fields[key].toObject()["stringValue"].toString() + split_s + key + split_l);
-            // }
             out.append(str.mid(0, str.size()-split_l.size()-1));
         }
         shift.setStringList(out);
     });
+}
 
+void firebase::add_yyyyMM(int addY, int addM){
+    yyyyMM = yyyyMM.addYears(addY);
+    yyyyMM = yyyyMM.addMonths(addM);
 }
